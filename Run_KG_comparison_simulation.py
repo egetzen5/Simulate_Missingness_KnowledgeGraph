@@ -55,12 +55,14 @@ from sklearn.metrics import make_scorer, r2_score, mean_absolute_error, mean_squ
 import os
 import pickle
 
+def run(data_path, kg_path, model_type = 'DL',test_type = 'incomplete'):
+
 lib_path = os.path.abspath(os.path.join('..', 'lib'))
 sys.path.append(lib_path)
 
-ds = "mimic"
+#ds = "mimic"
 #data_path = "/Users/emily/Documents/SequentialPhenotypePredictor-master/Data/mimic_seq/"
-data_path = '/home/egetzen/mimic_seq/'
+#data_path = '/home/egetzen/mimic_seq/'
 window=10
 size=100
 decay=5
@@ -68,31 +70,19 @@ skipgram=1
 norm=False
 
 
-# list for files
+## list for files
 train_files = []
 valid_files = []
 full_data_files = []
-
-
-# In[2]:
-
-
-
 for i in range(10):
     full_data_files.append(data_path + 'test_'+str(i))
 
-
-    
-    
+## train files
 events_files = []
-
 for i in range(7):
     events_files.append(data_path + 'test_'+str(i))
 
-
-for i in range(10):
-    full_data_files.append(data_path + 'test_'+str(i))
-    
+## Create sentence representation from the codified data   
 count = -1
 sss = []
 sentences = []
@@ -102,22 +92,14 @@ for i in events_files:
             count = count + 1
             sss.append(s)
             sentences.append(s.split("|")[2].split(" ") +
-
                              s.split("|")[3].replace("\n", "").split(" ")) 
 
-
-# In[6]:
-
-
+## Get unique medical concepts
 import itertools
 flat_sent = list(itertools.chain(*sentences))
 events2 = np.unique(flat_sent)
 events2 = np.ndarray.tolist(events2)
 len(events2)
-
-# In[4]:
-
-
 
 
 diag_totals = defaultdict(lambda: 0)
@@ -132,134 +114,47 @@ list_duplicates = []
 diag = []
 
 
-# In[4]:
 
 
+## Diseases to evaluate
 passed = ['d_250','d_585','d_428','d_403','d_272']
 
 
 
-# In[153]:
-
-
-pred = 'DL'
-test_type = 'incomplete'
-analysis = 'spli'
+pred = model_type
+analysis = 'not_split'
 condition = 'gender'
-file_path = '/home/egetzen/finalz_experiments1/'
+file_path = data_path + 'results/'
 
-
-#dice_mat = pd.read_csv("/users/emily/Documents/noisy_mat",header=None)
-dice_mat = pd.read_csv("/home/egetzen/noisy_mat",header=None)
-
-if pred == 'RNN':
-    from keras.models import Sequential
-    from keras.layers import Dense
-    from keras.layers import LSTM
-    from keras.layers.embeddings import Embedding
-    from keras.preprocessing import sequence
+## Read in knowledge graph
+dice_mat = pd.read_csv(kg_path,header=None)
     
 if analysis != 'split':
     if test_type == 'complete':
         if pred == 'lasso':
-            path_auc = file_path + 'MARoverall_lasso_aucc1'
-            path_auc2 = file_path + 'MARoverall_lasso_aucc2'
-            path_ratios = file_path + 'MARoverall_lasso_ratioc'
-            
-        if pred == 'RNN':
-            path_auc = file_path + 'MARoverall_RNN_aucc1'
-            path_auc2 = file_path + 'MARoverall_RNN_aucc2'
-            path_ratios = file_path + 'MARoverall_RNN_ratioc'
+            path_auc = file_path + 'KG_lasso_aucc1'
+            path_auc2 = file_path + 'KG_lasso_aucc2'
+            path_ratios = file_path + 'KG_lasso_ratioc'
+           
             
         if pred == 'DL':
-            path_auc = file_path + 'MARoverall_DL_aucc1'
-            path_auc2 = file_path + 'MARoverall_DL_aucc2'
-            path_ratios = file_path + 'MARoverall_DL_ratioc'
+            path_auc = file_path + 'KG_DL_aucc1'
+            path_auc2 = file_path + 'KG_DL_aucc2'
+            path_ratios = file_path + 'KG_DL_ratioc'
             
     if test_type == 'incomplete':
         if pred == 'lasso':
-            path_auc = file_path + 'MARoverall_lasso_auci1'
-            path_auc2 = file_path + 'MARoverall_lasso_auci2'
-            path_ratios = file_path + 'MARoverall_lasso_ratioi'
-            
-        if pred == 'lasso':
-            path_auc = file_path + 'MARoverall_RNN_auci1'
-            path_auc2 = file_path + 'MARoverall_RNN_auci2'
-            path_ratios = file_path + 'MARoverall_RNN_ratioi'
+            path_auc = file_path + 'KG_lasso_auci1'
+            path_auc2 = file_path + 'KG_lasso_auci2'
+            path_ratios = file_path + 'KG_lasso_ratioi'
+       
             
         if pred == 'DL':
-            path_auc = file_path + 'MARoverall_DL_auci1'
-            path_auc2 = file_path + 'MARoverall_DL_auci2'
-            path_ratios = file_path + 'MARoverall_DL_ratioi'
+            path_auc = file_path + 'KG_DL_auci1'
+            path_auc2 = file_path + 'KG_DL_auci2'
+            path_ratios = file_path + 'KG_DL_ratioi'
             
-
-            
-if analysis == 'split':
-    if condition == 'insurance':
-
-        if test_type == 'complete':
-
-            if pred == 'lasso':
-                path_auc = '/home/egetzen/missing_kg/MARkgins_lasso_aucc1'
-                path_auc2 = '/home/egetzen/missing_kg/MARkgins_lasso_aucc2'
-                path_ratios = '/home/egetzen/missing_kg/MARkgins_lasso_ratioc'
-
-
-        if test_type == 'incomplete':
-
-            if pred == 'lasso':
-                path_auc = '/home/egetzen/missing_kg/MARkgins_lasso_auci1'
-                path_auc2 = '/home/egetzen/missing_kg/MARkgins_lasso_auci2'
-                path_ratios = '/home/egetzen/missing_kg/MARkgins_lasso_ratioi'
-
-
-
-
-
-    if condition == 'gender':
-
-        if test_type == 'complete':
-
-
-            if pred == 'lasso':
-                path_auc = '/home/egetzen/missing_kg/MARkggender_lasso_aucc1'
-                path_auc2 = '/home/egetzen/missing_kg/MARkggender_lasso_aucc2'
-                path_ratios = '/home/egetzen/missing_kg/MARkggender_lasso_ratioc'
-
-
-
-        if test_type == 'incomplete':
-
-  
-
-            if pred == 'lasso':
-                path_auc = '/home/egetzen/missing_kg/MARkggender_lasso_auci1'
-                path_auc2 = '/home/egetzen/missing_kg/MARkggender_lasso_auci2'
-                path_ratios = '/home/egetzen/missing_kg/MARkggender_lasso_ratioi'
-
-
-
-    if condition == 'age2':
-        if test_type == 'incomplete':
-
-            if pred == 'lasso':
-                path_auc = '/home/egetzen/missing_kg/MARkgage_lasso_auci1'
-                path_auc2 = '/home/egetzen/missing_kg/MARkgage_lasso_auci2'
-                path_ratios = '/home/egetzen/missing_kg/MARkgage_lasso_ratioi'
-
-
-        if test_type == 'complete':
-
-            if pred == 'lasso':
-                path_auc = '/home/egetzen/missing_kg/MARkgage_lasso_aucc1'
-                path_auc2 = '/home/egetzen/missing_kg/MARkgage_lasso_aucc2'
-                path_ratios = '/home/egetzen/missing_kg/MARkgage_lasso_ratioc'
-
-
-
 dat = list(range(17,100,1))
-
-
 
 
 dataset_auc = []
@@ -276,12 +171,9 @@ for q in range(len(passed)):
     ratios_prop = []
     ratios_prop2 = []
 
-    #prop = [0,0.05,.16,.32,.48]
-
-    #prop = [0,.05,.1,.15,.2,.25,.3,.35,.4,.45,.5,0.55,0.6]
-    #prop = [0,0.09,.18,.27,.36,0.45]
+    ## Different amounts of missingness, these proportions lead to the same total amount missing without KG
     prop = [0,.055,.32,.59,.75]
-    #prop = [.48]
+
     for h in range(len(prop)):
         p = prop[h]
         AUC_hold = []
@@ -290,9 +182,8 @@ for q in range(len(passed)):
         AUC_hold4 = []
         ratios_hold = []
         ratios_hold2 = []
-        for w in range(200):
-            valid_files = []
-            
+        for w in range(200): ## 200 iterations and average results 
+            valid_files = []          
             p = prop[h]
             iters = w
             random.seed(range(200)[iters])
@@ -308,7 +199,7 @@ for q in range(len(passed)):
             
             # In[5]:
 
-
+            ## Get sentence structure for train files
             count = -1
             sss = []
             sentences = []
@@ -318,7 +209,6 @@ for q in range(len(passed)):
                         count = count + 1
                         sss.append(s)
                         sentences.append(s.split("|")[2].split(" ") +
-
                                          s.split("|")[3].replace("\n", "").split(" ")) 
 
 
@@ -420,7 +310,7 @@ for q in range(len(passed)):
 
 
                             prev_diags = [e for e in s.split("|")[2].split(" ") if e.startswith("d_")]
-                            if passed[q] in prev_diags: # if disease exit in the previous diagnosis
+                            if passed[q] in prev_diags: # if disease exists in the previous diagnosis
                                 disease_prev.append(1)
                             else:
                                 disease_prev.append(0)
@@ -497,7 +387,7 @@ for q in range(len(passed)):
             newsents = split_sentences(sentences)
 
             
-            ## Within each sentence, split medical record into individual visits  
+            ## Within each patient, split medical record into individual visits  
             def split_sentences2(sentences):
                 newsents = []
                 for count in range(len(sentences)):
@@ -580,7 +470,7 @@ for q in range(len(passed)):
             disease_train, omit1 = adjust_exclusions(sentences,newsents,omit1)
 
 
-        #Convert events in history to patient vector
+        ##Go through and remove medical events up to a desired proportion using the knowledge graph
 
 
             def patient_vec(data_files, newsents, remove_patient_data, disease_prev, target,omit,p,iters):
@@ -833,147 +723,8 @@ for q in range(len(passed)):
             
             
             
-            def RNN_index(data_files, newsents, remove_patient_data, disease_prev,omit, target,p):
-                count = -1
-                exclude = []
-                X_data = []
-                before = []
-                after = []
-                global model
-                global ratio
-                for i in data_files: 
-                    with open(i) as f:
-                        for line in f:
-                            count = count + 1
-                            patient_seq = []
-                            #feed_events = line.split("|")[2].split(" ")
-                            if omit[count]==1 or newsents[count]==[]:
-                                exclude.append(1)
-                            else:
-                                if disease_prev[count] == 1:  
-                                    visits = newsents[count][:target[count]]
-                                    if remove_patient_data[count]==1:
-                                        before.append(len(list(np.concatenate(visits))))
-                                        new_visits_all = []
-                                        test = np.random.binomial(1,p,len(visits))
-                                        remm = [b for b in range(len(test)) if test[b] == 1]
-                                        newv = [s for s in visits if visits.index(s) not in remm]
-                                        visits = newv
-                                        if visits == []:
-                                            exclude.append(1)
-                                        else:
-                                            for i in range(len(visits)):
-                                                new_visits = visits[i]
-                                                removals = []
-                                                visits_unique = np.unique(visits[i])
-                                                visits_unique = np.ndarray.tolist(visits_unique)
-                                                new_visits_unique = np.unique(visits[i])
-                                                new_visits_unique = np.ndarray.tolist(new_visits_unique)
-                                                if 1-p != 1:
-                                                    while len(new_visits_unique)/len(visits_unique)>= 1-p:
-                                                        rem = (random.sample(visits[i],1))[0]
-                                                        if rem not in removals:
-                                                            removals.append(rem)
-                                                            new_visits = [s for s in visits[i] if s not in removals]
-                                                            new_visits_unique = np.unique(new_visits)
-                                                            new_visits_unique = np.ndarray.tolist(new_visits_unique)
-                                                    new_visits_all.append(new_visits)
-                                            if new_visits_all == []:
-                                                new_visits_all = visits 
-                                            visits = new_visits_all 
-                                            if visits == []:
-                                                exclude.append(1)
-                                            else:
-                                                feed_events = list(np.concatenate(visits))
-                                                after.append(len(feed_events))
-                                                te = len(feed_events)
-                                                weighted_events = [(e,  math.exp(decay*(j-te+1)/te)) for j, e in enumerate(feed_events) if e in model.wv.vocab] 
-                                                if weighted_events == []:
-                                                    exclude.append(1)
-                                                else:
-                                                    exclude.append(0)
 
-                                    else:
-                                        if visits == []:
-                                            exclude.append(1)
-                                        else:
-                                            feed_events = list(np.concatenate(visits))  
-                                            te = len(feed_events)
-                                            weighted_events = [(e,  math.exp(decay*(j-te+1)/te)) for j, e in enumerate(feed_events) if e in model.wv.vocab]
-                                            if weighted_events == []:
-                                                exclude.append(1)
-                                            else:
-                                                exclude.append(0)
-
-
-                                else:
-                                    visits = newsents[count]                                   
-                                    if remove_patient_data[count]==1:
-                                        before.append(len(list(np.concatenate(visits))))
-                                        new_visits_all = []
-                                        test = np.random.binomial(1,p,len(visits))
-                                        remm = [b for b in range(len(test)) if test[b] == 1]
-                                        newv = [s for s in visits if visits.index(s) not in remm]
-                                        visits = newv
-                                        if visits == []:
-                                            exclude.append(1)
-                                        else:
-                                            for i in range(len(visits)):
-                                                new_visits = visits[i]
-                                                removals = []
-                                                visits_unique = np.unique(visits[i])
-                                                visits_unique = np.ndarray.tolist(visits_unique)
-                                                new_visits_unique = np.unique(visits[i])
-                                                new_visits_unique = np.ndarray.tolist(new_visits_unique)
-                                                if 1-p != 1:
-                                                    while len(new_visits_unique)/len(visits_unique)>= 1-p:
-                                                        rem = (random.sample(visits[i],1))[0]
-                                                        if rem not in removals:
-                                                            removals.append(rem)
-                                                            new_visits = [s for s in visits[i] if s not in removals]
-                                                            new_visits_unique = np.unique(new_visits)
-                                                            new_visits_unique = np.ndarray.tolist(new_visits_unique)
-                                                    new_visits_all.append(new_visits)
-                                            if new_visits_all == []:
-                                                new_visits_all = visits 
-                                            visits = new_visits_all 
-                                            if visits == []:
-                                                exclude.append(1)
-                                            else:
-                                                feed_events = list(np.concatenate(visits))
-
-                                                after.append(len(feed_events))
-                                                te = len(feed_events)
-                                                weighted_events = [(e,  math.exp(decay*(j-te+1)/te)) for j, e in enumerate(feed_events) if e in model.wv.vocab]
-                                                if weighted_events == []:
-                                                    exclude.append(1)
-                                                else:
-                                                    exclude.append(0)
-
-                                    else:
-                                        feed_events = list(np.concatenate(visits)) 
-                                        te = len(feed_events)
-                                        weighted_events = [(e,  math.exp(decay*(j-te+1)/te)) for j, e in enumerate(feed_events) if e in model.wv.vocab]
-                                        if weighted_events == []:
-                                            exclude.append(1)
-                                        else:
-                                            exclude.append(0)
-
-
-
-                                if exclude[count]==0:
-                                    feed_data = [events.index(np.array(feed_events[i])) for i in range(len(feed_events)) if feed_events[i] in events]
-                                    X_data.append(feed_data) 
-
-                if data_files == train_files:
-                    ratio = 1-sum(after)/sum(before)
-
-
-
-                return X_data, exclude,ratio
-
-
-            #Update labels for presence of target diagnosis
+            ## Update labels for presence of target diagnosis
             def update_data(exclude,disease_data,data_disease):                
                 disease_final = []
                 for i in range(0,len(exclude)):
@@ -988,16 +739,7 @@ for q in range(len(passed)):
 
                 return X_data_disease, Y_data_disease
 
-            def update_data_RNN(exclude,disease_data):
-                datay = []
-                for i in range(0,len(exclude)):
-                    if exclude[i] == 0:
-                        datay.append(disease_data[i])
-                y_data = np.array(datay)
-                
-
-                
-                return y_data
+        
             
             new_sentences, exclude, ratio = patient_vec(train_files, newsents, remove_patient_train, disease_prev,target_loc,omit1,p,iters)
 
@@ -1011,6 +753,7 @@ for q in range(len(passed)):
             np.random.seed(ran)
             tf.random.set_seed(ran)
 
+            ## Using the adjusted patient record, get a word2vec embedding of each remaining medical concept and create a patient vector representation via temporal averaging
             print('fitting word2vec model')
             model = gensim.models.Word2Vec(new_sentences, sg=skipgram, window=window,
                                                  iter=5, size=size, min_count=1, workers=1)
@@ -1068,9 +811,7 @@ for q in range(len(passed)):
 
                 y_train = update_data_RNN(exclude, disease_train)
                 
-
-            if condition == 'insurance' or condition == 'gender' or condition == 'age2':
-
+     
 
                 sentences, omit1, omit2, remove_patient_test, disease_prev = prep_data(valid_files,iters)
 
@@ -1082,10 +823,7 @@ for q in range(len(passed)):
 
                 disease_test, omit1 = adjust_exclusions(sentences, newsents,omit1)
 
-                if analysis == 'split':
-
-                    disease_test2, omit2 = adjust_exclusions(sentences, newsents,omit2)
-
+               
                 if test_type == 'complete':
                     p = 0
 
@@ -1093,10 +831,7 @@ for q in range(len(passed)):
 
                     new_sentences, exclude, ratio2 = patient_vec(valid_files, newsents,remove_patient_test,disease_prev, target_loc,omit1,p,iters)
 
-                    if analysis == 'split':
-
-                        new_sentences2, exclude2, ratio3 = patient_vec(valid_files, newsents,remove_patient_test,disease_prev, target_loc,omit2,p,iters)
-                        
+                                
                     patient_seq_all_disease_test = []
                     ct = -1
                     for i in range(len(exclude)):
@@ -1115,59 +850,14 @@ for q in range(len(passed)):
                                 patient_seq_all_disease_test.append(sum(patient_seq)/sum_weights)
 
 
-                    if analysis == 'split':
-                        patient_seq_all_disease_test2 = []
-                        ct = -1
-                        for i in range(len(exclude2)):
-                            if exclude2[i] == 0:
-                                ct = ct + 1
-                                te = len(new_sentences2[ct])
-                                weighted_events = [(e,  math.exp(decay*(j-te+1)/te)) for j, e in enumerate(new_sentences2[ct]) if e in model.wv.vocab] 
-                                if weighted_events == []:
-                                    exclude2[i] = 1
-                                else:
-                                    sum_weights = sum(weight for event,weight in weighted_events)
-                                    patient_seq = []
-                                    for a in weighted_events:
-                                        event, weight = a
-                                        patient_seq.append(weight*model.wv.word_vec(event,use_norm=norm))
-                                    patient_seq_all_disease_test2.append(sum(patient_seq)/sum_weights)
-
+          
 
 
                     data_disease_test = pd.DataFrame(patient_seq_all_disease_test)
 
-                    if analysis == 'split':
-
-                        data_disease_test2 = pd.DataFrame(patient_seq_all_disease_test2)
+                    
 
                     X_disease_test, Y_disease_test = update_data(exclude,disease_test,data_disease_test)
-
-                    if analysis == 'split':
-
-                        X_disease_test2, Y_disease_test2 = update_data(exclude2,disease_test2,data_disease_test2)
-
-
-                if pred == 'RNN':
-
-                    X_test, exclude, ratios2 = patient_vec(valid_files, newsents,remove_patient_test,disease_prev, target_loc,omit1,p,iters)
-                    
-          
-                    X_test_ind = []
-                    for i in range(len(X_test)):
-                        X_test_ind.append([dict_events[X_test[i][j]] for j in range(len(X_test[i])) if X_test[i][j] in events2])
-
-                        
-                    X_test = X_test_ind
-                    if analysis == 'split':
-
-                        X_test2, exclude2, ratios3 = RNN_index(valid_files, newsents, remove_patient_test,disease_prev, omit2,target_loc,0)
-
-                    y_test= update_data_RNN(exclude,disease_test)
-
-                    if analysis == 'split':
-
-                        y_test2,emb_eddings2 = update_data_RNN(exclude2,disease_test2)
 
 
                 if pred == 'lasso' or pred == 'DL' or pred == 'PDPS':
@@ -1196,15 +886,7 @@ for q in range(len(passed)):
                                 auc_disease_lasso = metrics.roc_auc_score(Y_disease_test, lasso_prob_disease)
                                 AUC_hold.append(auc_disease_lasso)
 
-                                if analysis == 'split':
-
-                                    lasso_prob_disease2 = lasso_fit_disease.predict_proba(X_disease_test2)[:,1]
-                                    auc_disease_lasso2 = metrics.roc_auc_score(Y_disease_test2, lasso_prob_disease2)
-                                    AUC_hold2.append(auc_disease_lasso2)
-                                    ratios_hold2.append(ratio)
-
-
-
+                                
 
 
                         else:
@@ -1443,365 +1125,6 @@ for q in range(len(passed)):
 
 
 
-                if pred == 'RNN':
-                    
-                    ran = range(200)[iters]
-                    random.seed(ran)
-                    np.random.seed(ran)
-                    tf.random.set_seed(ran)
-
-                    if len(np.unique(y_test)) == 2:
-                            
-                        y_train = np.asarray(y_train).astype('float32').reshape((-1, 1))
-                        y_test = np.asarray(y_test).astype('float32').reshape((-1, 1))
-
-
-                        ratios_prop.append(ratio)
-                        print(ratio)
-
-
-                        # truncate and pad input sequences
-                        max_review_length = 3377
-                        X_train1 = sequence.pad_sequences(X_train, maxlen=max_review_length)
-                        X_test1 = sequence.pad_sequences(X_test, maxlen=max_review_length)
-
-                        if analysis == 'split':
-
-                            X_test2 = sequence.pad_sequences(X_test2, maxlen=max_review_length)
-
-                        import sklearn.metrics as metrics
-                        from sklearn.metrics import f1_score
-
-
-                        # create the model
-                        embedding_vecor_length = 100
-                        model = Sequential()
-                        model.add(Embedding(len(events2), embedding_vecor_length, weights = [embeddings], input_length=3377, trainable = False))
-                        model.add(LSTM(200))
-                        model.add(Dense(2, activation='softmax'))
-                        model.compile(loss="sparse_categorical_crossentropy", optimizer='adam', metrics=['accuracy'])
-                        print(model.summary())
-                        model.fit(X_train1, y_train, validation_data=(X_test1, y_test), epochs=3, batch_size=64)
-
-                        te_predict_Y = model.predict(X_test1)
-                        te_predict_Y = te_predict_Y[:,1]
-
-
-                        # ROC AUC
-                        auc = metrics.roc_auc_score(y_test, te_predict_Y)
-                        print('ROC AUC: %f' % auc)
-                        AUC_hold.append(auc)
-
-
-            if condition == 'age':
-                sentences, omit1, omit2, remove_patient_test,disease_prev = prep_data(valid_files)
-
-                newsents = split_sentences(sentences)
-
-                newsents2 = split_sentences2(sentences)
-
-                target_loc = adjust_all(newsents2)
-
-                disease_test, omit1 = adjust_exclusions(sentences, newsents,omit1)
-                disease_test2, omit2 = adjust_exclusions(sentences, newsents,omit2)
-  
-
-                if test_type == 'complete':
-                    p = 0
-
-                if pred == 'lasso' or pred == 'DL' or pred == 'PDPS':
-
-                    patient_seq_all_disease_test, exclude, ratio = patient_vec(valid_files, newsents,remove_patient_test,disease_prev, target_loc,omit1,p)
-                    patient_seq_all_disease_test2, exclude2,ratio = patient_vec(valid_files, newsents,remove_patient_test,disease_prev, target_loc,omit2,p)
-          
-                    data_disease_test = pd.DataFrame(patient_seq_all_disease_test)
-                    data_disease_test2 = pd.DataFrame(patient_seq_all_disease_test2)
-             
-                    X_disease_test, Y_disease_test = update_data(exclude,disease_test,data_disease_test)
-                    X_disease_test2, Y_disease_test2 = update_data(exclude2,disease_test2,data_disease_test2)
-               
-                if pred == 'RNN':
-
-
-
-                    X_test, exclude,ratio = RNN_index(valid_files, newsents, remove_patient_test, disease_prev,omit1, target_loc,p)
-                    X_test2, exclude2,ratio = RNN_index(valid_files, newsents, remove_patient_test, disease_prev, omit2,target_loc,p)
-                    X_test3, exclude3,ratio = RNN_index(valid_files, newsents, remove_patient_test,disease_prev,omit3, target_loc,p)
-                    X_test4, exclude4,ratio = RNN_index(valid_files, newsents, remove_patient_test,disease_prev, omit4,target_loc,p)
-
-
-                    y_test,emb_eddings = update_data_RNN(exclude,disease_test)
-                    y_test2,emb_eddings2 = update_data_RNN(exclude2,disease_test2)
-                    y_test3,emb_eddings3 = update_data_RNN(exclude3,disease_test3)
-                    y_test4,emb_eddings4 = update_data_RNN(exclude4,disease_test4)
-
-
-                if pred == 'lasso':
-
-                    if len(np.unique(Y_disease_test)) == 2 and len(np.unique(Y_disease_test2)) == 2 and len(np.unique(Y_disease_test3)) == 2 and len(np.unique(Y_disease_test4)) == 2:
-
-
-                        ratios_prop.append(ratio)
-                        print(ratio)
-
-                        searchCV_lasso = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))),penalty='l1',
-                        cv=5,random_state=777,fit_intercept=True,solver='liblinear',max_iter = 10000,scoring="f1")
-                        lasso_fit_disease = searchCV_lasso.fit(X_train_disease,Y_train_disease)
-
-                        lasso_prob_disease = lasso_fit_disease.predict_proba(X_train_disease)[:,1]
-                        lasso_prob_disease = lasso_fit_disease.predict_proba(X_disease_test)[:,1]
-                        auc_disease_lasso = metrics.roc_auc_score(Y_disease_test, lasso_prob_disease)
-
-                        lasso_prob_disease2 = lasso_fit_disease.predict_proba(X_disease_test2)[:,1]
-                        auc_disease_lasso2 = metrics.roc_auc_score(Y_disease_test2, lasso_prob_disease2)
-
-                        AUC_hold.append(auc_disease_lasso)
-                        AUC_hold2.append(auc_disease_lasso2)
-                  
-
-
-
-
-
-                    else:
-                        ratio = 'NA'
-                        print(ratio)
-
-
-                if pred == 'DL':
-                    
-
-                    if len(np.unique(Y_disease_test)) == 2 and len(np.unique(Y_disease_test2)) == 2 and len(np.unique(Y_disease_test3)) == 2 and len(np.unique(Y_disease_test4)) == 2:
-                        ratios_prop.append(ratio)
-                        print(ratio)
-
-
-                        print("Reading files..."),
-                        tr_dataframe = data_disease
-                        te_dataframe = data_disease_test
-                        te_dataframe2 = data_disease_test2
-                        te_dataframe3 = data_disease_test3
-                        te_dataframe4 = data_disease_test4
-
-
-                        print("Fineshed\n")
-
-                        print("Compressing data..."),
-                        tr_X = tr_dataframe.iloc[:, :-1].values
-                        tr_Y = tr_dataframe.iloc[:, -1].values
-                        te_X = te_dataframe.iloc[:, :-1].values
-                        te_Y = te_dataframe.iloc[:, -1].values
-                        te_X2 = te_dataframe2.iloc[:, :-1].values
-                        te_Y2 = te_dataframe2.iloc[:, -1].values
-                        te_X3 = te_dataframe3.iloc[:, :-1].values
-                        te_Y3 = te_dataframe3.iloc[:, -1].values
-                        te_X4 = te_dataframe4.iloc[:, :-1].values
-                        te_Y4 = te_dataframe4.iloc[:, -1].values
-
-
-
-
-
-                        # model_DL = KerasRegressor(build_fn = baseline_model(units = Grid.best_params_['units'], act = Grid.best_params_['act']), nb_epoch=2000, batch_size=300,verbose = 0)
-
-                        model_DL = Sequential()
-                        model_DL.add(Dense(55,activation = 'relu'))
-                        model_DL.add(Dense(20,activation='relu'))
-                        model_DL.add(Dense(1,activation = 'sigmoid'))
-                        model_DL.compile(loss='mean_squared_error', optimizer='adam')
-
-
-
-                        # In[ ]:
-
-
-
-
-                        # In[32]:
-
-
-                        model_DL.fit(tr_X,tr_Y,batch_size = 100, epochs=70, verbose = 0)
-                        tr_predict_Y = model_DL.predict(tr_X)
-                        te_predict_Y = model_DL.predict(te_X)    
-
-
-
-
-
-
-                        # ROC AUC
-                        auc = metrics.roc_auc_score(te_Y, te_predict_Y)
-                        print('ROC AUC: %f' % auc)
-
-
-
-
-
-                        te_predict_Y2 = model_DL.predict(te_X2) 
-
-                         # ROC AUC
-                        auc2 = metrics.roc_auc_score(te_Y2, te_predict_Y2)
-                        print('ROC AUC2: %f' % auc2)
-
-                        te_predict_Y3 = model_DL.predict(te_X3) 
-
-                         # ROC AUC
-                        auc3 = metrics.roc_auc_score(te_Y3, te_predict_Y3)
-                        print('ROC AUC3: %f' % auc3)
-
-                        te_predict_Y4 = model_DL.predict(te_X4) 
-
-                         # ROC AUC
-                        auc4 = metrics.roc_auc_score(te_Y4, te_predict_Y4)
-                        print('ROC AUC4: %f' % auc4)
-
-
-                        AUC.append(auc)
-                        AUC2.append(auc2)
-                        AUC3.append(auc3)
-                        AUC4.append(auc4)
-
-
-
-                    else:
-                        ratio = 'NA'
-
-
-
-                if pred == 'RNN':
-
-                    if len(np.unique(y_test)) == 2 and len(np.unique(y_test2)) == 2:
-                        ratios_prop.append(ratio)
-                        print(ratio)
-
-                        # truncate and pad input sequences
-                        max_review_length = 3377
-                        X_train1 = sequence.pad_sequences(X_train, maxlen=max_review_length)
-                        X_test1 = sequence.pad_sequences(X_test, maxlen=max_review_length)
-                        X_test2 = sequence.pad_sequences(X_test2, maxlen=max_review_length)
-
-                        import sklearn.metrics as metrics
-                        from sklearn.metrics import f1_score
-
-
-                        # create the model
-                        embedding_vecor_length = 100
-                        model = Sequential()
-                        model.add(Embedding(len(events), embedding_vecor_length, weights = [embeddings], input_length=3377, trainable = False))
-                        model.add(LSTM(100))
-                        model.add(Dense(1, activation='sigmoid'))
-                        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-                        print(model.summary())
-                        model.fit(X_train1, y_train, validation_data=(X_test1, y_test), epochs=3, batch_size=64)
-
-                        te_predict_Y = model.predict(X_test1)
-
-
-                        # ROC AUC
-                        auc = metrics.roc_auc_score(y_test, te_predict_Y)
-                        print('ROC AUC: %f' % auc)
-                        AUC.append(auc)
-
-
-                        model.fit(X_train1, y_train, validation_data=(X_test2, y_test2), epochs=3, batch_size=64)
-
-                        te_predict_Y2 = model.predict(X_test2)
-
-
-                        # ROC AUC
-                        auc2 = metrics.roc_auc_score(y_test2, te_predict_Y2)
-                        print('ROC AUC: %f' % auc2)
-                        AUC2.append(auc2)
-
-
-                        model.fit(X_train1, y_train, validation_data=(X_test3, y_test3), epochs=3, batch_size=64)
-
-                        te_predict_Y3 = model.predict(X_test3)
-
-
-                        # ROC AUC
-                        auc3 = metrics.roc_auc_score(y_test3, te_predict_Y3)
-                        print('ROC AUC3: %f' % auc3)
-                        AUC3.append(auc3)
-
-                        model.fit(X_train1, y_train, validation_data=(X_test4, y_test4), epochs=3, batch_size=64)
-
-                        te_predict_Y4 = model.predict(X_test4)
-
-
-                        # ROC AUC
-                        auc4 = metrics.roc_auc_score(y_test4, te_predict_Y4)
-                        print('ROC AUC4: %f' % auc4)
-                        AUC4.append(auc4)
-
-
-
-                    else:
-                        ratio = 'NA'
-
-
-                if pred == 'PDPS':
-
-                    if len(np.unique(Y_disease_test)) == 2 and len(np.unique(Y_disease_test2)) == 2:
-                        ratios_prop.append(ratio)
-                        print(ratio)
-                        cos_sim_test = []
-                        f1_calc = []
-                        for count in range(len(patient_seq_all_disease_test)): 
-                            a = patient_seq_all_disease_test[count]
-                            b = model.wv.word_vec(passed[q],use_norm=norm)
-                            norma = np.sqrt(a.dot(a))
-                            normb = np.sqrt(b.dot(b))
-                            cos_sim_test.append(dot(a, b)/(norma*normb))
-
-                        aucc=(metrics.roc_auc_score(Y_disease_test, cos_sim_test))
-                        AUC.append(metrics.roc_auc_score(Y_disease_test, cos_sim_test))
-                        print('AUC disease Dys:,',aucc)
-
-                        cos_sim_test2 = []
-                        f1_calc = []
-                        for count in range(len(patient_seq_all_disease_test2)): 
-                            a = patient_seq_all_disease_test2[count]
-                            b = model.wv.word_vec(passed[q],use_norm=norm)
-                            norma = np.sqrt(a.dot(a))
-                            normb = np.sqrt(b.dot(b))
-                            cos_sim_test2.append(dot(a, b)/(norma*normb))
-
-                        aucc2=(metrics.roc_auc_score(Y_disease_test2, cos_sim_test2))
-                        AUC2.append(metrics.roc_auc_score(Y_disease_test2, cos_sim_test2))
-                        print('AUC disease Dys2:,',aucc2)
-
-                        cos_sim_test3 = []
-                        f1_calc = []
-                        for count in range(len(patient_seq_all_disease_test3)): 
-                            a = patient_seq_all_disease_test3[count]
-                            b = model.wv.word_vec(passed[q],use_norm=norm)
-                            norma = np.sqrt(a.dot(a))
-                            normb = np.sqrt(b.dot(b))
-                            cos_sim_test3.append(dot(a, b)/(norma*normb))
-
-                        aucc3=(metrics.roc_auc_score(Y_disease_test3, cos_sim_test3))
-                        AUC3.append(metrics.roc_auc_score(Y_disease_test3, cos_sim_test3))
-                        print('AUC disease Dys:,',aucc3)
-
-
-                        cos_sim_test4 = []
-                        f1_calc = []
-                        for count in range(len(patient_seq_all_disease_test4)): 
-                            a = patient_seq_all_disease_test4[count]
-                            b = model.wv.word_vec(passed[q],use_norm=norm)
-                            norma = np.sqrt(a.dot(a))
-                            normb = np.sqrt(b.dot(b))
-                            cos_sim_test4.append(dot(a, b)/(norma*normb))
-
-                        aucc4=(metrics.roc_auc_score(Y_disease_test4, cos_sim_test4))
-                        AUC4.append(metrics.roc_auc_score(Y_disease_test4, cos_sim_test4))
-                        print('AUC disease Dys:,',aucc4)
-
-
-
-                    else:
-                        ratio = 'NA'
                         
         AUC.append(np.mean(AUC_hold))
         ratios_prop.append(np.mean(ratios_hold))
