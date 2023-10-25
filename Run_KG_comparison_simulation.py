@@ -69,7 +69,7 @@ decay=5
 skipgram=1
 norm=False
 
-
+#
 ## list for files
 train_files = []
 valid_files = []
