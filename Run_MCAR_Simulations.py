@@ -55,6 +55,8 @@ from sklearn.metrics import make_scorer, r2_score, mean_absolute_error, mean_squ
 import os
 import pickle
 
+def run(data_path, model_type, test_type):
+
 lib_path = os.path.abspath(os.path.join('..', 'lib'))
 sys.path.append(lib_path)
 
@@ -68,20 +70,12 @@ skipgram=1
 norm=False
 
 
-# list for files
+## list for files
 train_files = []
 valid_files = []
 full_data_files = []
-
-
-# In[2]:
-
-
 for i in range(10):
     full_data_files.append(data_path + 'test_'+str(i))
-
-
-# In[3]:
 
 
 diag_totals = defaultdict(lambda: 0)
@@ -98,20 +92,19 @@ diag = []
 
 # In[4]:
 
-
-passed = ['d_250','d_585','d_428']
-
-
+## Diseases to evaluate
+passed = ['d_250','d_585','d_428','d_403','d_272']
 
 
-pred = 'DL'
-test_type = 'incomplete'
-analysis = 'spli'
+
+
+pred = model_type
+analysis = 'not_split'
 condition = 'gender'
-file_path = '/home/egetzen/finalz_experiments1/'
+file_path = data_path + 'results/'
 
 
-dice_mat = pd.read_csv("/home/egetzen/dice_mat",header=None)
+#dice_mat = pd.read_csv("/home/egetzen/dice_mat",header=None)
 #dice_mat = pd.read_csv("/users/emily/Documents/dice_mat",header=None)
 
 
@@ -135,9 +128,9 @@ if analysis != 'split':
             path_ratios = file_path + 'MCAR_RNN_ratioc'
             
         if pred == 'DL':
-            path_auc = '/home/egetzen/missing_kg/MCAR_DL_aucc1'
-            path_auc2 = '/home/egetzen/missing_kg/MCAR_DL_aucc2'
-            path_ratios = '/home/egetzen/missing_kg/MCAR_DL_ratioc'
+            path_auc = file_path + 'MCAR_DL_aucc1'
+            path_auc2 = file_path + 'MCAR_DL_aucc1'
+            path_ratios = file_path + 'MCAR_DL_aucc1'
             
     if test_type == 'incomplete':
         if pred == 'lasso':
@@ -151,9 +144,9 @@ if analysis != 'split':
             path_ratios = file_path + 'MCAR_RNN_ratioi'
             
         if pred == 'DL':
-            path_auc = '/home/egetzen/missing_kg/MCAR_DL_auci1'
-            path_auc2 = '/home/egetzen/missing_kg/MCAR_DL_auci2'
-            path_ratios = '/home/egetzen/missing_kg/MCAR_DL_ratioi'
+            path_auc = file_path + 'MCAR_DL_auci1'
+            path_auc2 =file_path + 'MCAR_DL_auci1'
+            path_ratios = file_path + 'MCAR_DL_auci1'
             
 
             
@@ -242,7 +235,7 @@ for q in range(len(passed)):
     #prop = [0,.05,.1,.15,.2,.25,.3,.35,.4,.45,.5,0.55,0.6]
     #prop = [0,0.09,.18,.27,.36,0.45]
     #prop = [0,.16,.32,.48]
-    prop = [0,.2,.4,.6,.752]
+    prop = [0,.2,.4,.6,.752] ## Proportion of data to remove
     for h in range(len(prop)):
         p = prop[h]
         AUC_hold = []
@@ -250,7 +243,7 @@ for q in range(len(passed)):
         AUC_hold3 = []
         AUC_hold4 = []
         ratios_hold = []
-        for w in range(200):
+        for w in range(200): ##200 iterations and average results
             valid_files = []
             
             p = prop[h]
@@ -266,12 +259,7 @@ for q in range(len(passed)):
             print(train_files)
             print(valid_files)
 
-            
-            
-            
-            # In[5]:
-
-
+            ## Get sentence representation of codified medical concepts
             count = -1
             sss = []
             sentences = []
@@ -287,23 +275,13 @@ for q in range(len(passed)):
 
             # In[6]:
 
-
+            ## get unique events
             import itertools
             flat_sent = list(itertools.chain(*sentences))
             events = np.unique(flat_sent)
             events = np.ndarray.tolist(events)
             len(events)
 
-
-# In[190]:
-
-
-
-
-
-# In[35]:
-
-                
 
     ## Identify neonates to be excluded, extract sentences with all events in medical record, and target diagnoses existing in history
 
@@ -415,7 +393,7 @@ for q in range(len(passed)):
                         np.random.seed(ran)
                         tf.random.set_seed(ran)
                         
-                        
+                        ## Above code doesn't matter, we are just doing random selection since MCAR
                         remove_patient_data = [int(np.random.binomial(1,p_select[e],1)) for e in range(len(age_dyn))]
 
 
@@ -553,7 +531,7 @@ for q in range(len(passed)):
             disease_train, omit1 = adjust_exclusions(sentences,newsents,omit1)
 
 
-        #Convert events in history to patient vector
+        ## For each patient, remove medical events up to desired proportion at random
 
 
             def patient_vec(data_files, newsents, remove_patient_data, disease_prev, target,omit,p,iters):
@@ -783,7 +761,7 @@ for q in range(len(passed)):
                 return X_data, exclude,ratio
 
 
-            #Update labels for presence of target diagnosis
+            ## Update labels for presence of target diagnosis
             def update_data(exclude,disease_data,data_disease):                
                 disease_final = []
                 for i in range(0,len(exclude)):
@@ -821,6 +799,7 @@ for q in range(len(passed)):
             np.random.seed(ran)
             tf.random.set_seed(ran)
 
+            ## Using updated patients with events removed, embed each medical event and generate patient vector representation using temporal averaging
             print('fitting word2vec model')
             model = gensim.models.Word2Vec(new_sentences, sg=skipgram, window=window,
                                                  iter=5, size=size, min_count=1, workers=1)
