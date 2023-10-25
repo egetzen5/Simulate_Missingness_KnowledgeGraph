@@ -53,42 +53,31 @@ from sklearn.metrics import make_scorer, r2_score, mean_absolute_error, mean_squ
 import os
 import pickle
 
+def run(data_path, kg_path, model_type, test_type):
+
 lib_path = os.path.abspath(os.path.join('..', 'lib'))
 sys.path.append(lib_path)
 
 ds = "mimic"
 #data_path = "/Users/emily/Documents/SequentialPhenotypePredictor-master/Data/mimic_seq/"
-data_path = '/home/egetzen/mimic_seq/'
+#data_path = '/home/egetzen/mimic_seq/'
 window=10
 size=100
 decay=5
 skipgram=1
 norm=False
 
-# list for files
+## list for files
 train_files = []
 valid_files = []
 full_data_files = []
-
-
-# In[3]:
-
-
 for i in range(10):
     full_data_files.append(data_path + 'test_'+str(i))
-
-
-    
-    
 events_files = []
-
 for i in range(7):
     events_files.append(data_path + 'test_'+str(i))
 
-
-for i in range(10):
-    full_data_files.append(data_path + 'test_'+str(i))
-    
+## Get sentence representation for medical concepts    
 count = -1
 sss = []
 sentences = []
@@ -104,7 +93,7 @@ for i in events_files:
 
 # In[6]:
 
-
+## Get unique events
 import itertools
 flat_sent = list(itertools.chain(*sentences))
 events2 = np.unique(flat_sent)
@@ -128,11 +117,11 @@ diag = []
 
 # In[5]:
 
-
+## Diseases to evaluate
 passed = ['d_250','d_585','d_428','d_403','d_272']
 
 
-
+## For each disease to evaluate, three similar conditions that could realistically keep a patient from seeing a physician
 mnar = []
 diag_0 = ['d_357','d_276','d_285']
 diag_1 = ['d_587','d_580','d_684']
@@ -150,17 +139,16 @@ mnar
 # In[17]:
 
 
-pred = 'DL'
-test_type = 'incomplete'
-analysis = 'spl'
-condition = 'gender'
-file_path = '/home/egetzen/finalz_experiments1/'
+pred = model_type
+analysis = 'not_split'
+condition = 'gender' 
+file_path = data_path + 'results/'
 
 
 
 import copy
 
-dice_mat = pd.read_csv("/home/egetzen/noisy_mat",header=None)
+dice_mat = pd.read_csv(kg_path,header=None)
 #dice_mat = pd.read_csv("/users/emily/Documents/noisy_mat",header=None)
 
 if pred == 'RNN':
@@ -171,47 +159,44 @@ if pred == 'RNN':
     from keras.preprocessing import sequence
 
 
-
-
-if condition == 'gender':
   
-    if test_type == 'complete':
-    
-        if pred == 'DL':
+if test_type == 'complete':
 
-            path_auc = file_path + 'MNAR_DL_aucc1'
-            path_auc2 = file_path + 'MNAR_DL_aucc2'
-            path_ratios = file_path + 'MNAR_DL_ratioc'
+    if pred == 'DL':
 
-        if pred == 'lasso':
-            path_auc = file_path + 'MNAR_lasso_aucc1'
-            path_auc2 = file_path + 'MNAR_lasso_aucc2'
-            path_ratios = file_path + 'MNAR_lasso_ratioc'
-            
-        if pred == 'RNN':
-            path_auc = file_path + 'MNAR_RNN_aucc1'
-            path_auc2 = file_path + 'MNAR_RNN_aucc2'
-            path_ratios = file_path + 'MNAR_RNN_ratioc'
+        path_auc = file_path + 'MNAR_DL_aucc1'
+        path_auc2 = file_path + 'MNAR_DL_aucc2'
+        path_ratios = file_path + 'MNAR_DL_ratioc'
 
-
-            
-    if test_type == 'incomplete':
+    if pred == 'lasso':
+        path_auc = file_path + 'MNAR_lasso_aucc1'
+        path_auc2 = file_path + 'MNAR_lasso_aucc2'
+        path_ratios = file_path + 'MNAR_lasso_ratioc'
         
-        if pred == 'DL':
+    if pred == 'RNN':
+        path_auc = file_path + 'MNAR_RNN_aucc1'
+        path_auc2 = file_path + 'MNAR_RNN_aucc2'
+        path_ratios = file_path + 'MNAR_RNN_ratioc'
 
-            path_auc = file_path + 'MNAR_DL_auci1'
-            path_auc2 = file_path + 'MNAR_DL_auci2'
-            path_ratios = file_path + 'MNAR_DL_ratioi'
 
-        if pred == 'lasso':
-            path_auc = file_path + 'MNAR_lasso_auci1'
-            path_auc2 = file_path + 'MNAR_lasso_auci2'
-            path_ratios = file_path + 'MNAR_lasso_ratioi'
-            
-        if pred == 'RNN':
-            path_auc = file_path + 'MNAR_RNN_auci1'
-            path_auc2 = file_path + 'MNAR_RNN_auci2'
-            path_ratios = file_path + 'MNAR_RNN_ratioi'
+        
+if test_type == 'incomplete':
+    
+    if pred == 'DL':
+
+        path_auc = file_path + 'MNAR_DL_auci1'
+        path_auc2 = file_path + 'MNAR_DL_auci2'
+        path_ratios = file_path + 'MNAR_DL_ratioi'
+
+    if pred == 'lasso':
+        path_auc = file_path + 'MNAR_lasso_auci1'
+        path_auc2 = file_path + 'MNAR_lasso_auci2'
+        path_ratios = file_path + 'MNAR_lasso_ratioi'
+        
+    if pred == 'RNN':
+        path_auc = file_path + 'MNAR_RNN_auci1'
+        path_auc2 = file_path + 'MNAR_RNN_auci2'
+        path_ratios = file_path + 'MNAR_RNN_ratioi'
 
             
 
@@ -233,7 +218,7 @@ for q in range(len(passed)):
 
 
 
-    prop =  [0,0.04,.16,.32,.48]
+    prop =  [0,0.04,.16,.32,.48] ## These proportions equal the amount of missing with the MCAR experiments (since we remove visits and clusters of events)
     for h in range(len(prop)):
         p = prop[h]
       
@@ -243,23 +228,14 @@ for q in range(len(passed)):
         for w in range(200):
             valid_files = []
             p = prop[h]
-            iters = w
-            
+            iters = w   
             p = prop[h]
             iters = w
-            random.seed(range(200)[iters])
-            
-            
+            random.seed(range(200)[iters])    
             train_files = random.sample(full_data_files,7)
             for i in range(len(full_data_files)):
                 if full_data_files[i] not in train_files:
                     valid_files.append(full_data_files[i])
-                    
-
-                    
-            
-            # In[6]:
-
 
             count = -1
             sss = []
@@ -285,7 +261,7 @@ for q in range(len(passed)):
 
 
         ## Identify neonates to be excluded, extract sentences with all events in medical record, and target diagnoses existing in history
-
+        ## Determine which patients are selected for missing data based on LR model for demographics and 'unobserved underlying conditions'
 
             def prep_data(data_files,iters):
                 disease_prev = []
@@ -476,7 +452,7 @@ for q in range(len(passed)):
             newsents = split_sentences(sentences)
 
 
-            ## Within each sentence, split medical record into individual visits  
+            ## Within each patient, split medical records into individual visits  
             def split_sentences2(sentences):
                 newsents = []
                 for count in range(len(sentences)):
@@ -559,7 +535,7 @@ for q in range(len(passed)):
             disease_train, omit1 = adjust_exclusions(sentences,newsents,omit1)
 
 
-        #Convert events in history to patient vector
+        ## Remove visits medical concepts (according to knowledge graph) from patients selected for missingness 
 
 
             def patient_vec(data_files, newsents, remove_patient_data, disease_prev, target,omit,p,iters):
@@ -1017,6 +993,8 @@ for q in range(len(passed)):
             random.seed(ran)
             np.random.seed(ran)
             tf.random.set_seed(ran)
+
+            ## Fit word2vec model on updated patients with missing data. Create patient representation using weighted temporal averaging of embeddings
 
             print('fitting word2vec model')
             model = gensim.models.Word2Vec(new_sentences, sg=skipgram, window=window,
