@@ -55,6 +55,8 @@ from sklearn.metrics import make_scorer, r2_score, mean_absolute_error, mean_squ
 import osr
 import pickle
 
+def run(data_path,kg_path,model_type,test_type,demographic):
+
 lib_path = os.path.abspath(os.path.join('..', 'lib'))
 sys.path.append(lib_path)
 
@@ -67,30 +69,18 @@ decay=5
 skipgram=1
 norm=False
 
-# list for files
+## list for files
 train_files = []
 valid_files = []
 full_data_files = []
-
-
-# In[2]:
-
-
-
-
 for i in range(10):
     full_data_files.append(data_path + 'test_'+str(i))
-
-
-    
-    
 events_files = []
-
 for i in range(7):
     events_files.append(data_path + 'test_'+str(i))
 
 
-    
+## Get unique events
 count = -1
 sss = []
 sentences = []
@@ -100,13 +90,7 @@ for i in events_files:
             count = count + 1
             sss.append(s)
             sentences.append(s.split("|")[2].split(" ") +
-
                              s.split("|")[3].replace("\n", "").split(" ")) 
-
-
-# In[6]:
-
-
 import itertools
 flat_sent = list(itertools.chain(*sentences))
 events2 = np.unique(flat_sent)
@@ -131,22 +115,16 @@ diag = []
 
 # In[4]:
 
-
+## Diseases to test
 passed = ['d_250','d_585','d_428','d_403','d_272']
-
-
-# In[153]:
-
-
-pred = 'DL'
-test_type = 'incomplete'
+pred = model_type
 analysis = 'split'
-condition = 'race'
-file_path = '/home/egetzen/finalz_experiments1/'
+condition = demographic
+file_path = data_path + 'results/'
 
 
 #dice_mat = pd.read_csv("/users/emily/Documents/noisy_mat",header=None)
-dice_mat = pd.read_csv("/home/egetzen/noisy_mat",header=None)
+dice_mat = pd.read_csv(kg_path,header=None)
 
 if pred == 'RNN':
     from keras.models import Sequential
@@ -155,79 +133,47 @@ if pred == 'RNN':
     from keras.layers.embeddings import Embedding
     from keras.preprocessing import sequence
     
-if analysis != 'split':
-    if test_type == 'complete':
-        if pred == 'lasso':
-            path_auc = file_path + 'MARkg_lasso_aucc1'
-            path_auc2 = file_path + 'MARkg_lasso_aucc2'
-            path_ratios = file_path + 'MARkg_lasso_ratioc'
-        if pred == 'DL':
-            path_auc = file_path + 'MARkg_DL_aucc1'
-            path_auc2 = file_path + 'MARkg_DL_aucc2'
-            path_ratios = file_path + 'MARkg_DL_ratioc'
-            
-        if pred == 'RNN':
-            path_auc = file_path + 'MARkg_RNN_aucc1'
-            path_auc2 = file_path + 'MARkg_RNN_aucc2'
-            path_ratios = file_path + 'MARkg_RNN_ratioc'
-            
-            
-    if test_type == 'incomplete':
-        if pred == 'lasso':
-            path_auc = file_path + 'MARkg_lasso_auci1'
-            path_auc2 = file_path + 'MARkg_lasso_auci2'
-            path_ratios = file_path + 'MARkg_lasso_ratioi'
-        if pred == 'DL':
-            path_auc = file_path + 'MARkg_DL_auci1'
-            path_auc2 = file_path + 'MARkg_DL_auci2'
-            path_ratios = file_path + 'MARkg_DL_ratioi'
-        if pred == 'RNN':
-            path_auc = file_path + 'MARkg_RNN_auci1'
-            path_auc2 = file_path + 'MARkg_RNN_auci2'
-            path_ratios = file_path + 'MARkg_RNN_ratioi'
-            
-
-            
+       
 if analysis == 'split':
     if condition == 'insurance':
 
         if test_type == 'complete':
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkgins_lasso_aucc1'
-                path_auc2 = file_path + 'MARkgins_lasso_aucc2'
-                path_ratios = file_path + 'MARkgins_lasso_ratioc'
-                path_ratios2 = file_path + 'MARkgins_lasso_ratioc2'
+                path_auc = file_path + 'MARins_lasso_aucc1'
+                path_auc2 = file_path + 'MARins_lasso_aucc2'
+                path_ratios = file_path + 'MARins_lasso_ratioc'
+                path_ratios2 = file_path + 'MARins_lasso_ratioc2'
 
             if pred == 'DL':
-                path_auc = file_path + 'MARkgins_DL_aucc1'
-                path_auc2 = file_path + 'MARkgins_DL_aucc2'
-                path_ratios = file_path + 'MARkgins_DL_ratioc'
+                path_auc = file_path + 'MARins_DL_aucc1'
+                path_auc2 = file_path + 'MARins_DL_aucc2'
+                path_ratios = file_path + 'MARins_DL_ratioc'
                 file_path + 'MARkgins_DL_ratioc2'
                 
             if pred == 'RNN':
-                path_auc = file_path + 'MARkgins_RNN_aucc1'
-                path_auc2 = file_path + 'MARkgins_RNN_aucc2'
-                path_ratios = file_path + 'MARkgins_RNN_ratioc'
+                path_auc = file_path + 'MARins_RNN_aucc1'
+                path_auc2 = file_path + 'MARins_RNN_aucc2'
+                path_ratios = file_path + 'MARins_RNN_ratioc'
 
         if test_type == 'incomplete':
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkgins_lasso_auci1'
-                path_auc2 = file_path + 'MARkgins_lasso_auci2'
-                path_ratios = file_path + 'MARkgins_lasso_ratioi'
-                path_ratios2 = file_path + 'MARkgins_lasso_ratioi2'
+                path_auc = file_path + 'MARins_lasso_auci1'
+                path_auc2 = file_path + 'MARins_lasso_auci2'
+                path_ratios = file_path + 'MARins_lasso_ratioi'
+                path_ratios2 = file_path + 'MARins_lasso_ratioi2'
 
             if pred == 'DL':
-                path_auc = file_path + 'MARkgins_DL_auci1'
-                path_auc2 = file_path + 'MARkgins_DL_auci2'
-                path_ratios = file_path + 'MARkgins_DL_ratioi'
-                path_ratios2 = file_path + 'MARkgins_DL_ratioi2'
+                path_auc = file_path + 'MARins_DL_auci1'
+                path_auc2 = file_path + 'MARins_DL_auci2'
+                path_ratios = file_path + 'MARins_DL_ratioi'
+                path_ratios2 = file_path + 'MARins_DL_ratioi2'
                 
             if pred == 'RNN':
-                path_auc = file_path + 'MARkgins_RNN_auci1'
-                path_auc2 = file_path + 'MARkgins_RNN_auci2'
-                path_ratios = file_path + 'MARkgins_RNN_ratioi'
+                path_auc = file_path + 'MARins_RNN_auci1'
+                path_auc2 = file_path + 'MARins_RNN_auci2'
+                path_ratios = file_path + 'MARins_RNN_ratioi'
 
 
 
@@ -239,19 +185,19 @@ if analysis == 'split':
 
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkggender_lasso_aucc1'
-                path_auc2 = file_path + 'MARkggender_lasso_aucc2'
-                path_ratios = file_path + 'MARkggender_lasso_ratioc'
+                path_auc = file_path + 'MARgender_lasso_aucc1'
+                path_auc2 = file_path + 'MARgender_lasso_aucc2'
+                path_ratios = file_path + 'MARgender_lasso_ratioc'
 
             if pred == 'DL':
-                path_auc = '/home/egetzen/final_experiments/MARkggender_DL_aucc1'
-                path_auc2 = '/home/egetzen/final_experiments/MARkggender_DL_aucc2'
-                path_ratios = '/home/egetzen/final_experiments/MARkggender_DL_ratioc'
+                path_auc = file_path + 'MARgender_DL_aucc1'
+                path_auc2 = file_path + 'MARgender_DL_aucc2'
+                path_ratios = file_path + 'MARgender_DL_ratioc'
             
             if pred == 'RNN':
-                path_auc = file_path + 'MARkggender_RNN_aucc1'
-                path_auc2 = file_path + 'MARkggender_RNN_aucc2'
-                path_ratios = file_path + 'MARkggender_RNN_ratioc'
+                path_auc = file_path + 'MARgender_RNN_aucc1'
+                path_auc2 = file_path + 'MARgender_RNN_aucc2'
+                path_ratios = file_path + 'MARgender_RNN_ratioc'
 
 
 
@@ -262,22 +208,22 @@ if analysis == 'split':
   
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkggender_lasso_auci1'
-                path_auc2 = file_path + 'MARkggender_lasso_auci2'
-                path_ratios = file_path + 'MARkggender_lasso_ratioi'
-                path_ratios2 = file_path + 'MARkggender_lasso_ratioi2'
+                path_auc = file_path + 'MARgender_lasso_auci1'
+                path_auc2 = file_path + 'MARgender_lasso_auci2'
+                path_ratios = file_path + 'MARgender_lasso_ratioi'
+                path_ratios2 = file_path + 'MARgender_lasso_ratioi2'
 
             if pred == 'DL':
-                path_auc = file_path + 'MARkggender_DL_auci1'
-                path_auc2 = file_path + 'MARkggender_DL_auci2'
-                path_ratios = file_path + 'MARkggender_DL_ratioi'
-                path_ratios2 = file_path + 'MARkggender_DL_ratioi2'
+                path_auc = file_path + 'MARgender_DL_auci1'
+                path_auc2 = file_path + 'MARgender_DL_auci2'
+                path_ratios = file_path + 'MARgender_DL_ratioi'
+                path_ratios2 = file_path + 'MARgender_DL_ratioi2'
                 
                 
             if pred == 'RNN':
-                path_auc = file_path + 'MARkggender_RNN_auci1'
-                path_auc2 = file_path + 'MARkggender_RNN_auci2'
-                path_ratios = file_path + 'MARkggender_RNN_ratioi'
+                path_auc = file_path + 'MARgender_RNN_auci1'
+                path_auc2 = file_path + 'MARgender_RNN_auci2'
+                path_ratios = file_path + 'MARgender_RNN_ratioi'
 
 
 
@@ -285,72 +231,72 @@ if analysis == 'split':
         if test_type == 'incomplete':
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkgage_lasso_auci1'
-                path_auc2 = file_path + 'MARkgage_lasso_auci2'
-                path_ratios = file_path + 'MARkgage_lasso_ratioi'
-                path_ratios2 = file_path + 'MARkgage_lasso_ratioi2'
+                path_auc = file_path + 'MARage_lasso_auci1'
+                path_auc2 = file_path + 'MARage_lasso_auci2'
+                path_ratios = file_path + 'MARage_lasso_ratioi'
+                path_ratios2 = file_path + 'MARage_lasso_ratioi2'
 
             if pred == 'DL':
-                path_auc = file_path + 'MARkgage_DL_auci1'
-                path_auc2 = file_path + 'MARkgage_DL_auci2'
-                path_ratios = file_path + 'MARkgage_DL_ratioi'
-                path_ratios2 = file_path + 'MARkgage_DL_ratioi2'
+                path_auc = file_path + 'MARage_DL_auci1'
+                path_auc2 = file_path + 'MARage_DL_auci2'
+                path_ratios = file_path + 'MARage_DL_ratioi'
+                path_ratios2 = file_path + 'MARage_DL_ratioi2'
                 
             if pred == 'RNN':
-                path_auc = file_path + 'MARkgage_RNN_auci1'
-                path_auc2 = file_path + 'MARkgage_RNN_auci2'
-                path_ratios = file_path + 'MARkgage_RNN_ratioi'
+                path_auc = file_path + 'MARage_RNN_auci1'
+                path_auc2 = file_path + 'MARage_RNN_auci2'
+                path_ratios = file_path + 'MARage_RNN_ratioi'
 
 
         if test_type == 'complete':
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkgage_lasso_aucc1'
-                path_auc2 = file_path + 'MARkgage_lasso_aucc2'
-                path_ratios = file_path + 'MARkgage_lasso_ratioc'
+                path_auc = file_path + 'MARage_lasso_aucc1'
+                path_auc2 = file_path + 'MARage_lasso_aucc2'
+                path_ratios = file_path + 'MARage_lasso_ratioc'
 
             if pred == 'DL':
-                path_auc = '/home/egetzen/final_experiments/MARkgage_DL_aucc1'
-                path_auc2 = '/home/egetzen/final_experiments/MARkgage_DL_aucc2'
-                path_ratios = '/home/egetzen/final_experiments/MARkgage_DL_ratioc'
+                path_auc = file_path + 'MARage_DL_aucc1'
+                path_auc2 = file_path + 'MARage_DL_aucc2'
+                path_ratios = file_path + 'MARage_DL_ratioc'
                 
             if pred == 'RNN':
-                path_auc = file_path + 'MARkgage_RNN_aucc1'
-                path_auc2 = file_path + 'MARkgage_RNN_aucc2'
-                path_ratios = file_path + 'MARkgage_RNN_ratioc'
+                path_auc = file_path + 'MARage_RNN_aucc1'
+                path_auc2 = file_path + 'MARage_RNN_aucc2'
+                path_ratios = file_path + 'MARage_RNN_ratioc'
                 
     if condition == 'race':
         if test_type == 'incomplete':
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkgrace_lasso_auci1'
-                path_auc2 = file_path + 'MARkgrace_lasso_auci2'
-                path_ratios = file_path + 'MARkgrace_lasso_ratioi'
-                path_ratios2 = file_path + 'MARkgrace_lasso_ratioi2'
+                path_auc = file_path + 'MARrace_lasso_auci1'
+                path_auc2 = file_path + 'MARrace_lasso_auci2'
+                path_ratios = file_path + 'MARrace_lasso_ratioi'
+                path_ratios2 = file_path + 'MARrace_lasso_ratioi2'
 
             if pred == 'DL':
-                path_auc = file_path + 'MARkgrace_DL_auci1'
-                path_auc2 = file_path + 'MARkgrace_DL_auci2'
-                path_ratios = file_path + 'MARkgrace_DL_ratioi'
-                path_ratios2 = file_path + 'MARkgrace_DL_ratioi2'
+                path_auc = file_path + 'MARrace_DL_auci1'
+                path_auc2 = file_path + 'MARrace_DL_auci2'
+                path_ratios = file_path + 'MARrace_DL_ratioi'
+                path_ratios2 = file_path + 'MARrace_DL_ratioi2'
                 
             if pred == 'RNN':
-                path_auc = file_path + 'MARkgrace_RNN_auci1'
-                path_auc2 = file_path + 'MARkgrace_RNN_auci2'
-                path_ratios = file_path + 'MARkgrace_RNN_ratioi'
+                path_auc = file_path + 'MARrace_RNN_auci1'
+                path_auc2 = file_path + 'MARrace_RNN_auci2'
+                path_ratios = file_path + 'MARrace_RNN_ratioi'
 
 
         if test_type == 'complete':
 
             if pred == 'lasso':
-                path_auc = file_path + 'MARkgrace_lasso_aucc1'
-                path_auc2 = file_path + 'MARkgrace_lasso_aucc2'
-                path_ratios = file_path + 'MARkgrace_lasso_ratioc'
+                path_auc = file_path + 'MARrace_lasso_aucc1'
+                path_auc2 = file_path + 'MARrace_lasso_aucc2'
+                path_ratios = file_path + 'MARrace_lasso_ratioc'
 
             if pred == 'DL':
-                path_auc = file_path + 'MARkgrace_DL_aucc1'
-                path_auc2 = file_path + 'MARkgrace_DL_aucc2'
-                path_ratios = '/home/egetzen/final_experiments/MARkgrace_DL_ratioc'
+                path_auc = file_path + 'MARrace_DL_aucc1'
+                path_auc2 = file_path + 'MARrace_DL_aucc2'
+                path_ratios = file_path + 'MARrace_DL_ratioc'
                 
             if pred == 'RNN':
                 path_auc = file_path + 'MARkgrace_RNN_aucc1'
@@ -360,10 +306,6 @@ if analysis == 'split':
 
 
 dat = list(range(17,100,1))
-
-
-
-
 dataset_auc = []
 dataset_auc2 = []
 dataset_auc3 = []
@@ -379,12 +321,6 @@ for q in range(len(passed)):
     ratios_prop = []
     ratios_prop2 = []
 
-
-    #prop = [0,.05,.1,.15,.2,.25,.3,.35,.4,.45,.5,0.55,0.6]
-    #prop = [0,0.09,.18,.27,.36,0.45]
-    #prop = [0,.06,.18,.48]
-    #prop = [0,0.05,.16,.32,.48]
-    #prop =  [0.05,.16,.32,.48]
     prop = [0,0,0,0,0]
     prob_marg = [.02,.095,.195,.33,.49]
     prob_nomarg = [.02,.02,.02,.02,.02]
@@ -411,11 +347,6 @@ for q in range(len(passed)):
                     valid_files.append(full_data_files[i])
                     
 
-
-
-            # In[5]:
-
-
             count = -1
             sss = []
             sentences = []
@@ -425,12 +356,7 @@ for q in range(len(passed)):
                         count = count + 1
                         sss.append(s)
                         sentences.append(s.split("|")[2].split(" ") +
-
                                          s.split("|")[3].replace("\n", "").split(" ")) 
-
-
-            # In[6]:
-
 
             import itertools
             flat_sent = list(itertools.chain(*sentences))
@@ -441,7 +367,7 @@ for q in range(len(passed)):
                 
 
     ## Identify neonates to be excluded, extract sentences with all events in medical record, and target diagnoses existing in history
-
+    ## Determine which patients get selected for missing data based on logistic regression model
 
             def prep_data(data_files,iters):
                 disease_prev = []
@@ -616,7 +542,7 @@ for q in range(len(passed)):
 
             
 
-            ## Within each sentence, split medical record into individual visits  
+            ## Within each patient, split medical record into individual visits  
             def split_sentences(sentences):
                 newsents = []
                 for count in range(len(sentences)):
@@ -744,7 +670,7 @@ for q in range(len(passed)):
             disease_train, omit1 = adjust_exclusions(sentences,newsents,omit1)
 
 
-        #Convert events in history to patient vector
+        ##Simulate missing data by removing visits and clusters of events (according to knowledge graph probabilities)
 
 
             def patient_vec(data_files, newsents, remove_patient_data, disease_prev, target,omit,p,iters,X_marg):
@@ -1070,6 +996,7 @@ for q in range(len(passed)):
             np.random.seed(ran)
             tf.random.set_seed(ran)
 
+            ## Take updated patients with missing data and create patient vectors using word2vec by embedding each medical concept and doing weighted temporal averaging
             #print('fitting word2vec model')
             model = gensim.models.Word2Vec(new_sentences, sg=skipgram, window=window,
                                                  iter=5, size=size, min_count=1, workers=1)
